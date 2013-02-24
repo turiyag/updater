@@ -1,0 +1,16 @@
+c:\users\mitchell\documents\visual studio 2012\Projects\EGUpdate\EGUpdate\bin\Debug\EGUpdate.exe.config
+c:\users\mitchell\documents\visual studio 2012\Projects\EGUpdate\EGUpdate\bin\Debug\EGUpdate.exe
+c:\users\mitchell\documents\visual studio 2012\Projects\EGUpdate\EGUpdate\bin\Debug\EGUpdate.pdb
+c:\users\mitchell\documents\visual studio 2012\Projects\EGUpdate\EGUpdate\obj\Debug\EGUpdate.exe
+c:\users\mitchell\documents\visual studio 2012\Projects\EGUpdate\EGUpdate\obj\Debug\EGUpdate.pdb
+C:\Users\Mitchell\documents\visual studio 2012\Projects\EGUpdate\EGUpdate\obj\Debug\EGUpdate.csprojResolveAssemblyReference.cache
+C:\Users\Mitchell\Documents\Visual Studio 2012\Projects\EGUpdate\EGUpdate\bin\Debug\nunit.framework.dll
+C:\Users\Mitchell\Documents\Visual Studio 2012\Projects\EGUpdate\EGUpdate\bin\Debug\nunit.framework.xml
+C:\Users\User\Desktop\EGUpdate\EGUpdate\bin\Debug\EGUpdate.exe.config
+C:\Users\User\Desktop\EGUpdate\EGUpdate\obj\Debug\EGUpdate.exe
+C:\Users\User\Desktop\EGUpdate\EGUpdate\obj\Debug\EGUpdate.pdb
+C:\Users\User\Desktop\EGUpdate\EGUpdate\bin\Debug\EGUpdate.exe
+C:\Users\User\Desktop\EGUpdate\EGUpdate\bin\Debug\EGUpdate.pdb
+C:\Users\User\Desktop\EGUpdate\EGUpdate\bin\Debug\nunit.framework.dll
+C:\Users\User\Desktop\EGUpdate\EGUpdate\bin\Debug\nunit.framework.xml
+C:\Users\User\Desktop\EGUpdate\EGUpdate\obj\Debug\EGUpdate.csprojResolveAssemblyReference.cache

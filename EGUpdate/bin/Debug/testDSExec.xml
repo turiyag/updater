@@ -1,0 +1,6 @@
+<?xml version="1.0"?>
+<delta>
+	<exec id="calc" path="C:\Windows\System32\calc.exe" wait="true" />
+	<exec id="np" path="C:\Windows\System32\notepad.exe" args="C:\Windows\csup.txt" />
+	<exec id="ie" path="C:\Program Files\Internet Explorer\iexplore.exe" args="http://www.stackoverflow.com" />
+</delta>

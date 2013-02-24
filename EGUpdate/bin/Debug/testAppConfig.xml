@@ -1,0 +1,14 @@
+<?xml version="1.0"?>
+<app>
+	<remote>
+		<root>http://localhost/dev/updater/testapp/</root>
+		<ver>version.txt</ver>
+	</remote>
+	<local>
+		<root>C:\Users\User\Desktop\updatertest</root>
+		<ver>version.txt</ver>
+	</local>
+	<desc>
+		Test App
+	</desc>
+</app>

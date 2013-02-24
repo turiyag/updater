@@ -1,0 +1,72 @@
+﻿<?xml version="1.0" encoding="utf-8" standalone="no"?>
+<!--This file represents the results of running a test suite-->
+<test-results name="C:\Users\User\Desktop\EGUpdate\EGUpdate\bin\Debug\EGUpdate.exe" total="14" errors="0" failures="0" not-run="0" inconclusive="0" ignored="0" skipped="0" invalid="0" date="2013-02-22" time="20:44:07">
+  <environment nunit-version="2.6.2.12296" clr-version="2.0.50727.5466" os-version="Microsoft Windows NT 6.1.7601 Service Pack 1" platform="Win32NT" cwd="C:\Program Files (x86)\NUnit 2.6.2\bin" machine-name="USER-HP" user="User" user-domain="User-HP" />
+  <culture-info current-culture="en-US" current-uiculture="en-US" />
+  <test-suite type="Assembly" name="C:\Users\User\Desktop\EGUpdate\EGUpdate\bin\Debug\EGUpdate.exe" executed="True" result="Success" success="True" time="0.141" asserts="0">
+    <results>
+      <test-suite type="Namespace" name="EGUpdate" executed="True" result="Success" success="True" time="0.140" asserts="0">
+        <results>
+          <test-suite type="TestFixture" name="AppConfigTest" executed="True" result="Success" success="True" time="0.009" asserts="0">
+            <results>
+              <test-case name="EGUpdate.AppConfigTest.Test" executed="True" result="Success" success="True" time="0.003" asserts="7" />
+              <test-case name="EGUpdate.AppConfigTest.TestInterpretation" executed="True" result="Success" success="True" time="0.002" asserts="11" />
+            </results>
+          </test-suite>
+          <test-suite type="TestFixture" name="DeltaStepTest" executed="True" result="Success" success="True" time="0.010" asserts="0">
+            <results>
+              <test-case name="EGUpdate.DeltaStepTest.LoadXML" executed="True" result="Success" success="True" time="0.000" asserts="1" />
+              <test-case name="EGUpdate.DeltaStepTest.MiniTest" executed="True" result="Success" success="True" time="0.000" asserts="0" />
+              <test-case name="EGUpdate.DeltaStepTest.TestPathBuilders" executed="True" result="Success" success="True" time="0.000" asserts="2" />
+            </results>
+          </test-suite>
+          <test-suite type="TestFixture" name="DSDeltaTest" executed="True" result="Success" success="True" time="0.002" asserts="0">
+            <results>
+              <test-case name="EGUpdate.DSDeltaTest.Test" executed="True" result="Success" success="True" time="0.000" asserts="0" />
+            </results>
+          </test-suite>
+          <test-suite type="TestFixture" name="DSExecTest" executed="True" result="Success" success="True" time="0.005" asserts="0">
+            <results>
+              <test-case name="EGUpdate.DSExecTest.Test" executed="True" result="Success" success="True" time="0.004" asserts="21" />
+            </results>
+          </test-suite>
+          <test-suite type="TestFixture" name="DSMkDirTest" executed="True" result="Success" success="True" time="0.001" asserts="0">
+            <results>
+              <test-case name="EGUpdate.DSMkDirTest.Test" executed="True" result="Success" success="True" time="0.000" asserts="0" />
+            </results>
+          </test-suite>
+          <test-suite type="TestFixture" name="DSSetTest" executed="True" result="Success" success="True" time="0.001" asserts="0">
+            <results>
+              <test-case name="EGUpdate.DSSetTest.Test" executed="True" result="Success" success="True" time="0.000" asserts="0" />
+            </results>
+          </test-suite>
+          <test-suite type="TestFixture" name="DSWaitTest" executed="True" result="Success" success="True" time="0.001" asserts="0">
+            <results>
+              <test-case name="EGUpdate.DSWaitTest.Test" executed="True" result="Success" success="True" time="0.000" asserts="0" />
+            </results>
+          </test-suite>
+          <test-suite type="TestFixture" name="HashSetExtensionsTest" executed="True" result="Success" success="True" time="0.001" asserts="0">
+            <results>
+              <test-case name="EGUpdate.HashSetExtensionsTest.Test" executed="True" result="Success" success="True" time="0.000" asserts="9" />
+            </results>
+          </test-suite>
+          <test-suite type="TestFixture" name="HTTPTest" executed="True" result="Success" success="True" time="0.015" asserts="0">
+            <results>
+              <test-case name="EGUpdate.HTTPTest.Test" executed="True" result="Success" success="True" time="0.013" asserts="2" />
+            </results>
+          </test-suite>
+          <test-suite type="TestFixture" name="XContainerExtensionsTest" executed="True" result="Success" success="True" time="0.002" asserts="0">
+            <results>
+              <test-case name="EGUpdate.XContainerExtensionsTest.Test" executed="True" result="Success" success="True" time="0.000" asserts="24" />
+            </results>
+          </test-suite>
+          <test-suite type="TestFixture" name="XMLReaderExtensionsTest" executed="True" result="Success" success="True" time="0.002" asserts="0">
+            <results>
+              <test-case name="EGUpdate.XMLReaderExtensionsTest.Test" executed="True" result="Success" success="True" time="0.000" asserts="15" />
+            </results>
+          </test-suite>
+        </results>
+      </test-suite>
+    </results>
+  </test-suite>
+</test-results>

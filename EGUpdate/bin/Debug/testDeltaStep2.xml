@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+<delta>
+	<exec id="calc" path="C:\Windows\System32\calc.exe" wait="true" />
+	<exec id="ie" path="C:\Program Files\Internet Explorer\iexplore.exe" wait="false" />
+	<exec id="np" path="C:\Windows\System32\notepad.exe" />
+	<set local="?app\?old" remote="http://home.edgemontgeek.com/dev/syncocean/?new" concurrent="true">
+		<set local="?app\common">
+			<move from="log.txt" to="oldlog.txt" caution="force" />
+		</set>
+		<get remote="log.csv" local="newlog.csv" />
+		<get remote="update.exe" />
+	</set>
+	<wait id="onesec" time="1000" msg="Waiting one second" />
+	<mkdir path="?app\?new" conflict="die" />
+	<set local="?app\?new">
+		<kill path="*\syncocean.exe" />
+		<exec path="update.exe" args="-t 10" wait="true" />
+		<del path="update.exe" />
+		<exec path="syncocean.exe" />
+	</set>
+	<startup user="current" name="SyncOcean" path="?app\?new\syncocean.exe" caution="force" />
+</delta>

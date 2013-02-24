@@ -1,0 +1,25 @@
+﻿<Properties>
+  <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" />
+  <MonoDevelop.Ide.Workbench ActiveDocument="EGUpdate\App.config">
+    <Files>
+      <File FileName="EGUpdate\Program.cs" Line="22" Column="16" />
+      <File FileName="c:\Users\Mitchell\Documents\Visual Studio 2012\Projects\EGUpdate\EGUpdate\AppConfig.cs" Line="104" Column="12" />
+      <File FileName="EGUpdate\ObjXML.cs" Line="1" Column="1" />
+      <File FileName="EGUpdate\UpdateConfig.cs" Line="1" Column="1" />
+      <File FileName="EGUpdate\App.config" Line="1" Column="1" />
+    </Files>
+    <Pads>
+      <Pad Id="ProjectPad">
+        <State expanded="True">
+          <Node name="EGUpdate" expanded="True">
+            <Node name="App.config" selected="True" />
+          </Node>
+        </State>
+      </Pad>
+    </Pads>
+  </MonoDevelop.Ide.Workbench>
+  <MonoDevelop.Ide.DebuggingService.Breakpoints>
+    <BreakpointStore />
+  </MonoDevelop.Ide.DebuggingService.Breakpoints>
+  <MonoDevelop.Ide.DebuggingService.PinnedWatches />
+</Properties>

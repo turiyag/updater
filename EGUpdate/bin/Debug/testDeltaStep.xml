@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+<delta>
+	<set local="here" concurrent="true">
+		<wait time="10000" />
+		<wait time="1000" />
+		<wait time="4000" />
+		<wait time="2000" />
+	</set>
+	<set>
+		<wait time="1000" />
+		<exec id="calc" path="C:\Windows\System32\calc.exe" wait="true" />
+		<exec id="np" path="C:\Windows\System32\notepad.exe" args="C:\Windows\csup.txt" />
+		<wait time="4000" msg="Waiting four seconds" />
+	</set>
+	<mkdir id="mydir" path="C:\temp\merp" caution="safe" />
+	<wait time="1" msg="?(mydir) was created" />
+</delta>
