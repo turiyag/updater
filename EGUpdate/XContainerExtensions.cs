@@ -22,7 +22,7 @@ namespace EGUpdate {
         public static IEnumerable<XElement> Select(this XContainer xd, string sSelector) {
             HashSet<XElement> xelReturn = new HashSet<XElement>();
             if (sSelector.Contains(',')) {
-                sSelector.Replace(", ", ",");
+                sSelector = sSelector.Replace(", ", ",");
                 foreach (string s in sSelector.Split(',')) {
                     xelReturn.AddRange(xd.Select(s));
                 }
@@ -59,10 +59,11 @@ namespace EGUpdate {
             if (sSelector == "*") {
                 return true;
             } else {
+                sSelector = sSelector.ToLower();
                 switch (sFirst) {
                     case ".":
                         string sClassAttr = xe.Attr("class");
-                        sSelector = sSelector.ToLower().Substring(1);
+                        sSelector = sSelector.Substring(1);
                         if (string.IsNullOrWhiteSpace(sClassAttr)) {
                             return false;
                         } else {
@@ -79,7 +80,7 @@ namespace EGUpdate {
                         if (string.IsNullOrWhiteSpace(sID)) {
                             return false;
                         }
-                        sSelector = sSelector.ToLower().Substring(1);
+                        sSelector = sSelector.Substring(1);
                         return sID.ToLower() == sSelector;
                     case "[":
                         if (sSelector.Substring(sSelector.Length - 1) != "]") {

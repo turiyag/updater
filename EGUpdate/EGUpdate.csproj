@@ -14,7 +14,7 @@
     <SchemaVersion>2.0</SchemaVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <PlatformTarget>AnyCPU</PlatformTarget>
+    <PlatformTarget>x64</PlatformTarget>
     <DebugSymbols>True</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>False</Optimize>
@@ -46,8 +46,15 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AppConfig.cs" />
-    <Compile Include="DSDelta.cs" />
+    <Compile Include="DSAdmin.cs" />
+    <Compile Include="DSStartup.cs" />
+    <Compile Include="DSKill.cs" />
     <Compile Include="DSMkDir.cs" />
+    <Compile Include="DSDel.cs" />
+    <Compile Include="DSCopy.cs" />
+    <Compile Include="DSGet.cs" />
+    <Compile Include="DSMove.cs" />
+    <Compile Include="DSDelta.cs" />
     <Compile Include="DSWait.cs" />
     <Compile Include="DSSet.cs" />
     <Compile Include="DSExec.cs" />
@@ -56,14 +63,30 @@
     <Compile Include="Globals.cs" />
     <Compile Include="HTTP.cs" />
     <Compile Include="EGUConfig.cs" />
+    <Compile Include="NativeMethods.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Properties\Resources.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
+    <Compile Include="UAC.cs" />
     <Compile Include="XContainerExtensions.cs" />
     <Compile Include="XmlReaderExtensions.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
     <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Properties\Resources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\install.xml" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

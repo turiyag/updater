@@ -1,11 +1,11 @@
 <?xml version="1.0"?>
 <app>
 	<remote>
-		<root>http://localhost/dev/updater/testapp/</root>
+		<root>http://home.edgemontgeek.com/dev/updater/testapp/</root>
 		<ver>version.txt</ver>
 	</remote>
 	<local>
-		<root>C:\Users\User\Desktop\updatertest</root>
+		<root>C:\Users\Mitchell\Desktop\Programming\CNET\EGUpdate\EGUpdate\bin\Debug</root>
 		<ver>version.txt</ver>
 	</local>
 	<desc>

@@ -9,8 +9,7 @@ using System.Xml.Linq;
 using System.Threading;
 
 namespace EGUpdate {
-    class DSDelta : DeltaStep {
-        private bool _bConcurrent;
+    public class DSDelta : DeltaStep {
         private List<DeltaStep> _dslSubSteps;
 
         public DSDelta(AppConfig acApp) {
@@ -42,8 +41,18 @@ namespace EGUpdate {
             _dssStatus = DeltaStepStatus.Waiting;
         }
 
-        public override List<DeltaStep> GetSubSteps() {
-            return _dslSubSteps;
+        public override List<DeltaStep> GetChildSteps(DeltaStepCode dscCode = DeltaStepCode.None) {
+            if (dscCode == DeltaStepCode.None) {
+                return _dslSubSteps;
+            } else {
+                List<DeltaStep> dslRet = new List<DeltaStep>();
+                foreach (DeltaStep ds in _dslSubSteps) {
+                    if (ds.GetStepCode() == dscCode) {
+                        dslRet.Add(ds);
+                    }
+                }
+                return dslRet;
+            }
         }
 
         public override void Attempt() {
@@ -60,6 +69,7 @@ namespace EGUpdate {
 
         [Test]
         public void Test() {
+            DSDelta dsdDelta = DeltaStepTest.GetTestDelta();
         }
     }
 }

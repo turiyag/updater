@@ -1,0 +1,14 @@
+<?xml version="1.0"?>
+<app>
+	<remote>
+		<root>http://home.edgemontgeek.com/dev/updater/installer/</root>
+		<ver>version.txt</ver>
+	</remote>
+	<local>
+		<root>C:\Program Files\test</root>
+		<ver>version.txt</ver>
+	</local>
+	<desc>
+		Test Installer
+	</desc>
+</app>

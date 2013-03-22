@@ -14,3 +14,13 @@ C:\Users\User\Desktop\EGUpdate\EGUpdate\bin\Debug\EGUpdate.pdb
 C:\Users\User\Desktop\EGUpdate\EGUpdate\bin\Debug\nunit.framework.dll
 C:\Users\User\Desktop\EGUpdate\EGUpdate\bin\Debug\nunit.framework.xml
 C:\Users\User\Desktop\EGUpdate\EGUpdate\obj\Debug\EGUpdate.csprojResolveAssemblyReference.cache
+C:\Users\Mitchell\Desktop\Programming\CNET\EGUpdate\EGUpdate\bin\Debug\EGUpdate.exe.config
+C:\Users\Mitchell\Desktop\Programming\CNET\EGUpdate\EGUpdate\obj\Debug\EGUpdate.exe
+C:\Users\Mitchell\Desktop\Programming\CNET\EGUpdate\EGUpdate\obj\Debug\EGUpdate.pdb
+C:\Users\Mitchell\Desktop\Programming\CNET\EGUpdate\EGUpdate\obj\Debug\EGUpdate.csprojResolveAssemblyReference.cache
+C:\Users\Mitchell\Desktop\Programming\CNET\EGUpdate\EGUpdate\bin\Debug\EGUpdate.exe
+C:\Users\Mitchell\Desktop\Programming\CNET\EGUpdate\EGUpdate\bin\Debug\EGUpdate.pdb
+C:\Users\Mitchell\Desktop\Programming\CNET\EGUpdate\EGUpdate\bin\Debug\nunit.framework.dll
+C:\Users\Mitchell\Desktop\Programming\CNET\EGUpdate\EGUpdate\bin\Debug\nunit.framework.xml
+C:\Users\Mitchell\Desktop\Programming\CNET\EGUpdate\EGUpdate\obj\Debug\EGUpdate.Properties.Resources.resources
+C:\Users\Mitchell\Desktop\Programming\CNET\EGUpdate\EGUpdate\obj\Debug\EGUpdate.csproj.GenerateResource.Cache

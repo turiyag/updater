@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -11,7 +12,7 @@ using System.Xml.Linq;
 
 namespace EGUpdate {
 	public enum AppStatus { Error, OutOfDate, UpToDate, Unknown };
-    class AppConfig {
+    public class AppConfig {
         private string _sRemoteRoot = "";
         private string _sRemoteVerFilePath = "";
         private string _sLocalRoot = "";
@@ -23,9 +24,15 @@ namespace EGUpdate {
         private List<DeltaStep> _dslAllSteps = new List<DeltaStep>();
         private AppStatus _asAppStatus = AppStatus.Unknown;
         private Exception _eLast;
-        private Dictionary<string,string> _dPathMap = new Dictionary<string,string>();
+        private Dictionary<string, string> _dPathMap = new Dictionary<string, string>();
+        private int _iCurrentStepIndex = 0;
+        private int _iStepCount;
 
         public AppConfig(XElement xe) {
+            IDictionary idEnviron = Environment.GetEnvironmentVariables();
+            foreach (DictionaryEntry de in idEnviron) {
+                _dPathMap.Add(de.Key.ToString(), de.Value.ToString());
+            }
             _sRemoteRoot = xe.Select("remote root").Text().Trim();
             _sRemoteVerFilePath = xe.Select("remote ver").Text().Trim();
             _sLocalRoot = xe.Select("local root").Text().Trim();
@@ -83,8 +90,13 @@ namespace EGUpdate {
         }
 
         public string GetLocalVersion() {
+            string sPath = GetLocalVerFilePath();
             if (string.IsNullOrEmpty(_sVerLocal)) {
-                _sVerLocal = File.ReadAllText(GetLocalVerFilePath());
+                if (File.Exists(sPath)) {
+                    _sVerLocal = File.ReadAllText(sPath);
+                } else {
+                    _sVerLocal = null;
+                }
             }
             return _sVerLocal;
         }
@@ -123,6 +135,9 @@ namespace EGUpdate {
             int iBracketPos;
             string sKey;
             string sRet;
+            if (string.IsNullOrWhiteSpace(sPath)) {
+                return sPath;
+            }
             iPos = sPath.IndexOf('?');
 
             if (iPos != -1) {
@@ -134,11 +149,22 @@ namespace EGUpdate {
                         if (sPath.Substring(iPos, 4) == "?app") {
                             sRet += GetLocalRoot();
                             iPos += 3;
+                        } else if (sPath.Substring(iPos, 4) == "?rem") {
+                            sRet += GetRemoteRoot();
+                            iPos += 3;
                         } else if (sPath.Substring(iPos, 4) == "?new") {
                             sRet += GetRemoteVersion();
                             iPos += 3;
+                        } else if (sPath.Substring(iPos, 4) == "?egu") {
+                            sRet += UAC.Dir();
+                            iPos += 3;
                         } else if (sPath.Substring(iPos, 4) == "?old") {
-                            sRet += GetLocalVersion();
+                            string sLocalVersion = GetLocalVersion();
+                            if (sLocalVersion == null) {
+                                Program.FailAndDie("No old version exists, could not parse ?old in:\n" + sPath);
+                            } else {
+                                sRet += GetLocalVersion();
+                            }
                             iPos += 3;
                         } else if (sPath[iPos + 1] == '(') {
                             iBracketPos = sPath.IndexOf(')', iPos + 1);
@@ -196,19 +222,31 @@ namespace EGUpdate {
             return _eLast;
         }
 
+        public int GenerateStepIndex() {
+            _iCurrentStepIndex++;
+            _iStepCount = _iCurrentStepIndex;
+            return _iCurrentStepIndex;
+        }
+
+        public int GetStepCount() {
+            return _iStepCount;
+        }
+
     }
 
 
     [TestFixture]
     public class AppConfigTest {
+        public const string sLocalTestPath = @"C:\Users\Mitchell\Desktop\Programming\CNET\EGUpdate\EGUpdate\bin\Debug";
+        public const string sRemoteTestPath = @"http://home.edgemontgeek.com/dev/updater/testapp";
 
         [Test]
         public void Test() {
             XDocument xd = XDocument.Load("testAppConfig.xml");
             AppConfig ac = new AppConfig(xd.Element("app"));
-            Assert.AreEqual("http://localhost/dev/updater/testapp", ac.GetRemoteRoot());
-            Assert.AreEqual(@"C:\Users\User\Desktop\updatertest", ac.GetLocalRoot());
-            Assert.AreEqual(@"C:\Users\User\Desktop\updatertest\version.txt", ac.GetLocalVerFilePath());
+            Assert.AreEqual(sRemoteTestPath, ac.GetRemoteRoot());
+            Assert.AreEqual(sLocalTestPath, ac.GetLocalRoot());
+            Assert.AreEqual(sLocalTestPath + @"\version.txt", ac.GetLocalVerFilePath());
             Assert.AreEqual("Test App", ac.GetDescription());
             Assert.AreEqual("v1.0", ac.GetLocalVersion());
             Assert.AreEqual("v2.0", ac.GetRemoteVersion());
@@ -219,17 +257,18 @@ namespace EGUpdate {
         public void TestInterpretation() {
             XDocument xd = XDocument.Load("testAppConfig.xml");
             AppConfig ac = new AppConfig(xd.Element("app"));
-            Assert.AreEqual(@"C:\Users\User\Desktop\updatertest", ac.Interpret(@"?app"));
-            Assert.AreEqual(@"C:\Users\User\Desktop\updatertest", ac.Interpret(@"C:\Users\User\Desktop\updatertest"));
+            Assert.AreEqual(sLocalTestPath, ac.Interpret(@"?app"));
+            Assert.AreEqual(sLocalTestPath, ac.Interpret(sLocalTestPath));
             Assert.AreEqual(@"merp.exe", ac.Interpret(@"merp.exe"));
             Assert.AreEqual(@"v1.0", ac.Interpret(@"?old"));
             Assert.AreEqual(@"v2.0", ac.Interpret(@"?new"));
             Assert.AreEqual(@"?new?old", ac.Interpret(@"??new??old"));
             Assert.AreEqual(@"??new?old", ac.Interpret(@"????new??old"));
-            Assert.AreEqual(@"C:\Users\User\Desktop\updatertest\v1.0", ac.Interpret(@"?app\?old"));
+            Assert.AreEqual(sLocalTestPath + @"\v1.0", ac.Interpret(@"?app\?old"));
             Assert.AreEqual(@"?app\v1.0", ac.Interpret(@"??app\?old"));
             Assert.AreEqual(@"?app\?old", ac.Interpret(@"??app\??old"));
-            Assert.AreEqual(@"C:\Users\User\Desktop\updatertest\v2.0", ac.Interpret(@"?app\?new"));
+            Assert.AreEqual(sLocalTestPath + @"\v2.0", ac.Interpret(@"?app\?new"));
+            Assert.AreEqual(@"C:\Windows\system32\calc.exe", ac.Interpret(@"?(windir)\system32\calc.exe"));
         }
     }
 }

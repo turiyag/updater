@@ -48,43 +48,48 @@ namespace EGUpdate {
 
         [Test]
         public void Test() {
-            XDocument xd = XDocument.Load("testAppConfig.xml");
-            AppConfig ac = new AppConfig(xd.Element("app"));
-            DSDelta dsdDelta = ac.GetDelta();
-            Assert.AreEqual(6, ac.GetSteps().Count);
-            foreach (DeltaStep ds in ac.GetSteps(DeltaStepCode.Exec)) {
+            DSDelta dsdDelta = DeltaStepTest.GetTestDelta();
+            List<DeltaStep> dsl = dsdDelta.GetDescendantSteps(DeltaStepCode.Exec);
+            Assert.AreEqual(6, dsl.Count);
+            foreach (DeltaStep ds in dsl) {
                 DSExec dse = (DSExec)(ds);
                 switch (ds.GetID()) {
                     case "ie":
                         Assert.AreEqual(@"C:\Program Files (x86)\Google\Chrome\Application\chrome.exe", dse.GetPath());
                         Assert.AreEqual(@"http://www.stackoverflow.com", dse.GetArgs());
-                        Assert.AreEqual(false, dse.GetWaitCmd());
+                        Assert.False(dse.GetWaitCmd());
                         Assert.AreEqual(DeltaStepCautionLevel.Die, dse.GetCautionLevel());
                         break;
                     case "np":
                         Assert.AreEqual(@"C:\Windows\System32\notepad.exe", dse.GetPath());
                         Assert.AreEqual(@"C:\Windows\csup.txt", dse.GetArgs());
-                        Assert.AreEqual(false, dse.GetWaitCmd());
+                        Assert.False(dse.GetWaitCmd());
                         Assert.AreEqual(DeltaStepCautionLevel.Die, dse.GetCautionLevel());
                         break;
                     case "calc":
                         Assert.AreEqual(@"C:\Windows\System32\calc.exe", dse.GetPath());
                         Assert.AreEqual(@"", dse.GetArgs());
-                        Assert.AreEqual(true, dse.GetWaitCmd());
+                        Assert.True(dse.GetWaitCmd());
                         Assert.AreEqual(DeltaStepCautionLevel.Die, dse.GetCautionLevel());
                         break;
                     case "update":
                     case "update2":
-                        Assert.AreEqual(@"C:\Users\User\Desktop\updatertest\update.exe", dse.GetPath());
-                        Assert.AreEqual(@"C:\Users\User\Desktop\updatertest", dse.GetArgs());
-                        Assert.AreEqual(false, dse.GetWaitCmd());
+                        Assert.AreEqual(AppConfigTest.sLocalTestPath + @"\update.exe", dse.GetPath());
+                        Assert.AreEqual(AppConfigTest.sLocalTestPath, dse.GetArgs());
+                        Assert.False(dse.GetWaitCmd());
                         Assert.AreEqual(DeltaStepCautionLevel.Skip, dse.GetCautionLevel());
                         break;
                     case "oldnew":
-                        Assert.AreEqual(@"C:\Users\User\Desktop\updatertest\v2.0\cmd.exe", dse.GetPath());
+                        Assert.AreEqual(AppConfigTest.sLocalTestPath + @"\v2.0\foobar.exe", dse.GetPath());
                         Assert.AreEqual(@"v1.0", dse.GetArgs());
-                        Assert.AreEqual(true, dse.GetWaitCmd());
+                        Assert.True(dse.GetWaitCmd());
                         Assert.AreEqual(DeltaStepCautionLevel.Die, dse.GetCautionLevel());
+                        break;
+                    case "foobar":
+                        Assert.AreEqual(AppConfigTest.sLocalTestPath + @"\foobar.exe", dse.GetPath());
+                        Assert.AreEqual(AppConfigTest.sLocalTestPath, dse.GetArgs());
+                        Assert.False(dse.GetWaitCmd());
+                        Assert.AreEqual(DeltaStepCautionLevel.Skip, dse.GetCautionLevel());
                         break;
                     default:
                         Assert.Fail("Unnamed <exec> step");
