@@ -1,11 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <VisualState xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" ShowCheckBoxes="true">
   <TopNode>[0-1025]C:\Users\User\Desktop\EGUpdate\EGUpdate\bin\Debug\EGUpdate.exe</TopNode>
-  <SelectedNode>[0-1025]C:\Users\User\Desktop\EGUpdate\EGUpdate\bin\Debug\EGUpdate.exe</SelectedNode>
+  <SelectedNode>[0-1020]EGUpdate.HTTPTest.Test</SelectedNode>
   <ExcludeCategories>false</ExcludeCategories>
   <Nodes>
-    <Node UniqueName="[0-1025]C:\Users\User\Desktop\EGUpdate\EGUpdate\bin\Debug\EGUpdate.exe" Expanded="true" />
+    <Node UniqueName="[0-1025]C:\Users\User\Desktop\EGUpdate\EGUpdate\bin\Debug\EGUpdate.exe" Expanded="true" Checked="true" />
     <Node UniqueName="[0-1026]EGUpdate" Expanded="true" />
     <Node UniqueName="[0-1000]EGUpdate.AppConfigTest" Expanded="true" />
+    <Node UniqueName="[0-1011]EGUpdate.DSExecTest" Expanded="true" />
+    <Node UniqueName="[0-1019]EGUpdate.HTTPTest" Expanded="true" />
   </Nodes>
 </VisualState>
