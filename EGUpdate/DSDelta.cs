@@ -22,9 +22,8 @@ namespace EGUpdate {
             } catch (Exception) {
                 try {
                     sXML = HTTP.GetString(acApp.GetRemoteVerPath() + "update/init.xml");
-                } catch (Exception e) {
-                    Program.FailAndDie("Could not retrieve xml files: " + e.Message);
-                    return;
+                } catch (Exception) {
+                    throw new Exception("Error downloading update configurations");
                 }
             }
             XDocument xd = XDocument.Load(new StringReader(sXML));

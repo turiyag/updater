@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<app>
+<app version="1">
 	<remote>
 		<root>http://home.edgemontgeek.com/dev/updater/testapp/</root>
 		<ver>version.txt</ver>
