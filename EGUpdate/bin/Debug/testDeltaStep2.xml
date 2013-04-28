@@ -18,5 +18,5 @@
 		<del path="update.exe" />
 		<exec path="syncocean.exe" />
 	</set>
-	<startup user="current" name="SyncOcean" path="?app\?new\syncocean.exe" caution="force" />
+	<startup scope="currentuser" name="SyncOcean" path="?app\?new\syncocean.exe" caution="force" />
 </delta>

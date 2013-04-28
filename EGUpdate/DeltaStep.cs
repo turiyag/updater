@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Xml.Linq;
+using Microsoft.Win32;
 
 namespace EGUpdate {
     public enum DeltaStepStatus {
@@ -21,21 +22,21 @@ namespace EGUpdate {
         Force
     };
     public enum DeltaStepCode {
+        Admin,
+        Delta,
         Set,
-        Fetch,
-        Get,
-        In,
+        Exec,
+        Wait,
         Move,
+        Get,
         Copy,
         Del,
-        Delta,
-        Exec,
-        Kill,
-        Wait,
         MkDir,
+        Kill,
+        Startup,
         None
     };
-    class DeltaStep {
+    public class DeltaStep {
         protected DeltaStepStatus _dssStatus = DeltaStepStatus.Initial;
         protected DeltaStepCode _dscCode = DeltaStepCode.None;
         protected string _sXML;
@@ -45,39 +46,46 @@ namespace EGUpdate {
         protected string _sLocal;
         protected DeltaStepCautionLevel _dsclCaution;
         protected string _sID;
+        protected int _iStepIndex;
 
         public void Run() {
             _dssStatus = DeltaStepStatus.Running;
-            System.Console.WriteLine("Running: " + ToString());
+            Message("Running");
+            System.Console.ReadLine();
             try {
                 Attempt();
             } catch (Exception e) {
                 _dssStatus = DeltaStepStatus.Error;
-                System.Console.Error.WriteLine("Primary error: " + e.Message);
+                Message("Error [" + e.Message + "]");
                 try {
                     switch (_dsclCaution) {
                         case DeltaStepCautionLevel.Safe:
-                            System.Console.Error.WriteLine("Handling safely");
+                            Message("Handling safely");
                             Safe(e);
+                            Message("Handled safely");
                             break;
                         case DeltaStepCautionLevel.Skip:
-                            System.Console.Error.WriteLine("Skipping this step");
+                            Message("Skipping this step");
                             Skip(e);
+                            Message("Skipped this step");
                             break;
                         case DeltaStepCautionLevel.Force:
-                            System.Console.Error.WriteLine("Attempting to force");
+                            Message("Attempting to force");
                             Force(e);
+                            Message("Forced");
                             break;
                         case DeltaStepCautionLevel.Die:
-                            System.Console.Error.WriteLine("Dying");
+                            Message("Dying");
                             Die(e);
+                            Message("Dead");
                             break;
                     }
                 } catch (Exception eHandling) {
-                    Program.FailAndDie("Handling failed on error: " + eHandling.ToString());
+                    Message("Handling failed on error: " + eHandling.ToString());
+                    Program.FailAndDie("");
                 }
             }
-            System.Console.WriteLine("Complete: " + ToString());
+            Message("Complete");
             _dssStatus = DeltaStepStatus.Complete;
         }
         public virtual void Attempt() {
@@ -89,18 +97,89 @@ namespace EGUpdate {
         public virtual void Force(Exception e) {
         }
         public virtual void Die(Exception e) {
-            Program.FailAndDie("Fatal error in element: " + e.Message);
+            Message("Fatal error: " + e.Message);
+            Program.FailAndDie("");
         }
-        public virtual List<DeltaStep> GetSubSteps() {
+        protected void Message(string sMsg) {
+            System.Console.WriteLine("(" + _iStepIndex + "/" + _acApp.GetStepCount() + ") - " + ToString() + ": " + sMsg);
+        }
+        public virtual List<DeltaStep> GetChildSteps(DeltaStepCode dscCode = DeltaStepCode.None) {
             return new List<DeltaStep>();
         }
-        public int CountSteps() {
-            List<DeltaStep> dsl = GetSubSteps();
-            int iCount = 1;
-            foreach (DeltaStep ds in dsl) {
-                iCount += ds.CountSteps();
+        public virtual List<DeltaStep> GetDescendantSteps(DeltaStepCode dscCode = DeltaStepCode.None) {
+            List<DeltaStep> dsl = GetChildSteps();
+            List<DeltaStep> dslRet = new List<DeltaStep>();
+            if (dscCode == DeltaStepCode.None) {
+                foreach (DeltaStep ds in dsl) {
+                    dslRet.Add(ds);
+                    dslRet.AddRange(ds.GetDescendantSteps(dscCode));
+                }
+            } else {
+                foreach (DeltaStep ds in dsl) {
+                    if (ds.GetStepCode() == dscCode) {
+                        dslRet.Add(ds);
+                    }
+                    dslRet.AddRange(ds.GetDescendantSteps(dscCode));
+                }
             }
-            return iCount;
+            return dslRet;
+        }
+
+        //Nerfed Select function, only works with ID selector ("#theid") and name ("exec")
+        //Also recognizes descendant ("#deltests del") and multiples ("#deltests, #copytests")
+        public IEnumerable<DeltaStep> Select(string sSelector) {
+            HashSet<DeltaStep> hsdsReturn = new HashSet<DeltaStep>();
+            if (sSelector.Contains(',')) {
+                sSelector = sSelector.Replace(", ", ",");
+                foreach (string s in sSelector.Split(',')) {
+                    hsdsReturn.AddRange(Select(s));
+                }
+            } else {
+                int iIndex = sSelector.IndexOf(" ");
+                if (iIndex != -1) {
+                    string sSelectorHead = sSelector.Substring(0, iIndex);
+                    string sSelectorTail = sSelector.Substring(iIndex + 1);
+                    foreach (DeltaStep ds in GetChildSteps()) {
+                        if (ds.Matches(sSelectorHead)) {
+                            hsdsReturn.AddRange(ds.Select(sSelectorTail));
+                        } else {
+                            hsdsReturn.AddRange(ds.Select(sSelector));
+                        }
+                    }
+                } else {
+                    foreach (DeltaStep ds in GetChildSteps()) {
+                        if (ds.Matches(sSelector)) {
+                            hsdsReturn.Add(ds);
+                        } else {
+                            hsdsReturn.AddRange(ds.Select(sSelector));
+                        }
+                    }
+                }
+            }
+            return hsdsReturn;
+        }
+
+        //Nerfed Select function, only works with ID selector ("#theid") and name ("exec")
+        public bool Matches(string sSelector) {
+            if (string.IsNullOrWhiteSpace(sSelector)) {
+                return false;
+            }
+            string sFirst = sSelector.Substring(0, 1);
+            if (sSelector == "*") {
+                return true;
+            } else {
+                sSelector = sSelector.ToLower();
+                switch (sFirst) {
+                    case "#":
+                        if (string.IsNullOrWhiteSpace(_sID)) {
+                            return false;
+                        }
+                        sSelector = sSelector.Substring(1);
+                        return _sID.ToLower() == sSelector;
+                    default:
+                        return _dscCode.ToString().ToLower() == sSelector;
+                }
+            }
         }
 
         public void Initialize(XElement xe, DeltaStep dsParent, string sType) {
@@ -116,32 +195,58 @@ namespace EGUpdate {
             _acApp = dsParent._acApp;
             _sRemote = dsParent._sRemote;
             _sLocal = dsParent._sLocal;
-            System.Console.WriteLine("Ctn: " + dsParent._dsclCaution.ToString());
             sCautionLevel = xe.Attr("caution");
-            try {
-                _dsclCaution = (DeltaStepCautionLevel)(Enum.Parse(typeof(DeltaStepCautionLevel), sCautionLevel, true));
-            } catch (Exception) {
-                _dsclCaution = DeltaStepCautionLevel.Die;
+            if (string.IsNullOrWhiteSpace(sCautionLevel)) {
+                _dsclCaution = dsParent.GetCautionLevel();
+            } else {
+                try {
+                    _dsclCaution = (DeltaStepCautionLevel)(Enum.Parse(typeof(DeltaStepCautionLevel), sCautionLevel, true));
+                } catch (Exception) {
+                    _dsclCaution = DeltaStepCautionLevel.Die;
+                }
             }
             _acApp.AddStep(this);
+            _iStepIndex = _acApp.GenerateStepIndex();
         }
 
         public static DeltaStep Parse(XElement xe, DeltaStep dsParent, AppConfig acApp) {
-            System.Console.WriteLine("Parsing: " + xe.Name());
             DeltaStep ds;
             switch (xe.Name()) {
-                case "exec":
-                    ds = new DSExec(xe, dsParent, acApp);
-                    break;
                 case "set":
                     ds = new DSSet(xe, dsParent, acApp);
+                    break;
+                case "exec":
+                    ds = new DSExec(xe, dsParent, acApp);
                     break;
                 case "wait":
                     ds = new DSWait(xe, dsParent, acApp);
                     break;
-                default:
-                    ds = null;
+                case "move":
+                    ds = new DSMove(xe, dsParent, acApp);
                     break;
+                case "get":
+                    ds = new DSGet(xe, dsParent, acApp);
+                    break;
+                case "copy":
+                    ds = new DSCopy(xe, dsParent, acApp);
+                    break;
+                case "del":
+                    ds = new DSDel(xe, dsParent, acApp);
+                    break;
+                case "mkdir":
+                    ds = new DSMkDir(xe, dsParent, acApp);
+                    break;
+                case "kill":
+                    ds = new DSKill(xe, dsParent, acApp);
+                    break;
+                case "startup":
+                    ds = new DSStartup(xe, dsParent, acApp);
+                    break;
+                case "admin":
+                    ds = new DSAdmin(xe, dsParent, acApp);
+                    break;
+                default:
+                    throw new InvalidDataException("Undefined XML name: <" + xe.Name + "/>");
             }
             return ds;
         }
@@ -160,6 +265,18 @@ namespace EGUpdate {
             }
         }
 
+        public static string SafeRegistryValueName(RegistryKey rkKey, string sValueName) {
+            int iCount = 2;
+            if (rkKey.GetValue(sValueName) != null) {
+                while (rkKey.GetValue(sValueName + " (" + iCount + ")") != null) {
+                    iCount++;
+                }
+                return sValueName + " (" + iCount + ")";
+            } else {
+                return sValueName;
+            }
+        }
+
         public string FullLocalPath(string sPath, string sParentPath = null) {
             if (sParentPath == null) {
                 sParentPath = _sLocal;
@@ -175,7 +292,7 @@ namespace EGUpdate {
             if (sParentPath == null) {
                 sParentPath = _sRemote;
             }
-            if (sPath.Substring(0,4) == "http") {
+            if (sPath.Substring(0, 4) == "http") {
                 return sPath;
             } else {
                 if (sParentPath[sParentPath.Length - 1] == '/') {
@@ -210,6 +327,9 @@ namespace EGUpdate {
         public string GetID() {
             return _sID;
         }
+        public DeltaStep GetParent() {
+            return _dsParent;
+        }
         public DeltaStepCautionLevel GetCautionLevel() {
             return _dsclCaution;
         }
@@ -224,33 +344,68 @@ namespace EGUpdate {
 
     [TestFixture]
     public class DeltaStepTest {
-        [Test]
-        public void MiniTest() {
-            //XDocument xdApp = XDocument.Load("testAppConfig.xml");
-            //AppConfig ac = new AppConfig(xdApp.Element("app"));
-            //XDocument xdDelta = XDocument.Load("testDeltaStep.xml");
-            //XElement xeDelta = xdDelta.Element("delta");
-            //foreach (XElement xe in xeDelta.Elements()) {
-            //    DeltaStep ds = DeltaStep.Parse(xe, dc);
-            //    ds.Attempt();
-            //}
+
+        public void FullTest() {
+            DSDelta dsdDelta = DeltaStepTest.GetTestDelta();
+            dsdDelta.Run();
         }
 
         [Test]
         public void LoadXML() {
-            Assert.AreEqual(true, File.Exists("testDeltaStep.xml"));
+            Assert.True(File.Exists("testDeltaStep.xml"));
         }
 
         [Test]
         public void TestPathBuilders() {
-            Assert.AreEqual(@"C:\Users\User\Desktop\updatertest\test1 (2).txt", DeltaStep.SafePath(@"C:\Users\User\Desktop\updatertest\test1.txt"));
-            Assert.AreEqual(@"C:\Users\User\Desktop\updatertest\merp.txt", DeltaStep.SafePath(@"C:\Users\User\Desktop\updatertest\merp.txt"));
+            DSDelta dsd = DeltaStepTest.GetTestDelta();
+            Assert.AreEqual(AppConfigTest.sLocalTestPath + @"\version (2).txt", DeltaStep.SafePath(AppConfigTest.sLocalTestPath + @"\version.txt"));
+            Assert.AreEqual(AppConfigTest.sLocalTestPath + @"\merp.txt", DeltaStep.SafePath(AppConfigTest.sLocalTestPath + @"\merp.txt"));
+            Assert.AreEqual(@"C:\merp.txt", dsd.FullLocalPath(@"merp.txt", @"C:\"));
+            Assert.AreEqual(@"D:\merp.txt", dsd.FullLocalPath(@"D:\merp.txt", @"C:\herp"));
+            Assert.AreEqual(AppConfigTest.sLocalTestPath + @"\merp.txt", dsd.FullLocalPath(@"merp.txt"));
+
+            Assert.AreEqual(AppConfigTest.sRemoteTestPath + @"/merp.txt", dsd.FullRemotePath(@"merp.txt"));
+            Assert.AreEqual(AppConfigTest.sRemoteTestPath + @"/merp.txt", dsd.FullRemotePath(@"/merp.txt"));
+            Assert.AreEqual(AppConfigTest.sRemoteTestPath + @"/merp.txt", dsd.FullRemotePath(@"merp.txt", AppConfigTest.sRemoteTestPath));
+            Assert.AreEqual(AppConfigTest.sRemoteTestPath + @"/merp.txt", dsd.FullRemotePath(@"/merp.txt", AppConfigTest.sRemoteTestPath));
+            Assert.AreEqual(AppConfigTest.sRemoteTestPath + @"/merp.txt", dsd.FullRemotePath(@"merp.txt", AppConfigTest.sRemoteTestPath + "/"));
+            Assert.AreEqual(AppConfigTest.sRemoteTestPath + @"/merp.txt", dsd.FullRemotePath(@"/merp.txt", AppConfigTest.sRemoteTestPath + "/"));
         }
 
-        public DSDelta GetTestDelta() {
+        [Test]
+        public void TestSelect() {
+            DSDelta dsd = DeltaStepTest.GetTestDelta();
+            IEnumerable<DeltaStep> ids = dsd.Select("#getforce");
+            Assert.AreEqual(1, ids.Count());
+            Assert.AreEqual(DeltaStepCode.Get, ids.ElementAt(0).GetStepCode());
+            ids = dsd.Select("#getforce, #getdie");
+            Assert.AreEqual(2, ids.Count());
+            ids = dsd.Select("exec");
+            Assert.Greater(ids.Count(), 5);
+            ids = dsd.Select("#getforce, #getdie,exec");
+            Assert.Greater(ids.Count(), 7);
+            ids = dsd.Select("#deltests copy");
+            Assert.AreEqual(2, ids.Count());
+            ids = dsd.Select("#deltests del");
+            Assert.AreEqual(2, ids.Count());
+            ids = dsd.Select("#deltests copy,#deltests del");
+            Assert.AreEqual(4, ids.Count());
+        }
+
+        [Test]
+        public void TestSafeRegPath() {
+            RegistryKey rkLMMWC = Registry.LocalMachine.OpenSubKey(@"SOFTWARE\Microsoft\Windows\CurrentVersion", false);
+            Assert.AreEqual("DevicePath (2)", DeltaStep.SafeRegistryValueName(rkLMMWC, "DevicePath"));
+            Assert.AreEqual("NotHere", DeltaStep.SafeRegistryValueName(rkLMMWC, "NotHere"));
+        }
+
+        public static DSDelta GetTestDelta() {
             XDocument xd = XDocument.Load("testAppConfig.xml");
             AppConfig ac = new AppConfig(xd.Element("app"));
             return ac.GetDelta();
         }
+
+
+
     }
 }

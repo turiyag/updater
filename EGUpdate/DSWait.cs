@@ -24,9 +24,16 @@ namespace EGUpdate {
         }
 
         public override void Attempt() {
-            System.Console.WriteLine(_sMsg);
+            Message(_sMsg);
             Thread.Sleep(_iTime);
-            System.Console.WriteLine("Done: " + _sMsg);
+        }
+
+        public int GetTime() {
+            return _iTime;
+        }
+
+        public string GetMsg() {
+            return _sMsg;
         }
     }
 
@@ -35,6 +42,32 @@ namespace EGUpdate {
 
         [Test]
         public void Test() {
+            DSDelta dsdDelta = DeltaStepTest.GetTestDelta();
+            Assert.AreEqual(3, dsdDelta.GetDescendantSteps(DeltaStepCode.Wait).Count);
+            foreach (DeltaStep ds in dsdDelta.GetDescendantSteps(DeltaStepCode.Wait)) {
+                DSWait dsw = (DSWait)(ds);
+                switch (ds.GetID()) {
+                    case "3sec":
+                        Assert.AreEqual(3000, dsw.GetTime());
+                        Assert.AreEqual(@"This is a message", dsw.GetMsg());
+                        Assert.AreEqual(DeltaStepCautionLevel.Skip, dsw.GetCautionLevel());
+                        break;
+                    case "1sec":
+                        Assert.AreEqual(1000, dsw.GetTime());
+                        Assert.AreEqual("Waiting 1000ms", dsw.GetMsg());
+                        Assert.AreEqual(DeltaStepCautionLevel.Force, dsw.GetCautionLevel());
+                        break;
+                    case "1secB":
+                        Assert.AreEqual(1000, dsw.GetTime());
+                        Assert.AreEqual("Waiting 1000ms", dsw.GetMsg());
+                        Assert.AreEqual(DeltaStepCautionLevel.Safe, dsw.GetCautionLevel());
+                        break;
+                    default:
+                        Assert.Fail("Unnamed <wait> step");
+                        break;
+                }
+            }
+            //dsdDelta.Run();
         }
     }
 }

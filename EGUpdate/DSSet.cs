@@ -10,17 +10,19 @@ using System.Threading;
 
 namespace EGUpdate {
     class DSSet : DeltaStep {
-        private bool _bConcurrent;
-        private List<DeltaStep> _dslSubSteps;
+        bool _bConcurrent;
+        List<DeltaStep> _dslSubSteps;
 
         public DSSet(XElement xe, DeltaStep dsParent, AppConfig acApp) {
+            string sTempRemote;
+            string sTempLocal;
             Initialize(xe, dsParent, "set");
-            _sRemote = xe.Attr("remote", _sRemote);
-            _sRemote = acApp.Interpret(_sRemote);
-            _sRemote = FullRemotePath(_sRemote);
-            _sLocal = xe.Attr("local", _sLocal);
-            _sLocal = acApp.Interpret(_sLocal);
-            _sLocal = FullLocalPath(_sLocal);
+            sTempRemote = xe.Attr("remote", _sRemote);
+            sTempRemote = acApp.Interpret(sTempRemote);
+            _sRemote = FullRemotePath(sTempRemote);
+            sTempLocal = xe.Attr("local", _sLocal);
+            sTempLocal = acApp.Interpret(sTempLocal);
+            _sLocal = FullLocalPath(sTempLocal);
             _bConcurrent = (xe.Attr("concurrent") == "true");
             _dslSubSteps = new List<DeltaStep>();
             foreach (XElement xeChild in xe.Elements()) {
@@ -29,8 +31,18 @@ namespace EGUpdate {
             _dssStatus = DeltaStepStatus.Waiting;
         }
 
-        public override List<DeltaStep> GetSubSteps() {
-            return _dslSubSteps;
+        public override List<DeltaStep> GetChildSteps(DeltaStepCode dscCode = DeltaStepCode.None) {
+            if (dscCode == DeltaStepCode.None) {
+                return _dslSubSteps;
+            } else {
+                List<DeltaStep> dslRet = new List<DeltaStep>();
+                foreach (DeltaStep ds in _dslSubSteps) {
+                    if (ds.GetStepCode() == dscCode) {
+                        dslRet.Add(ds);
+                    }
+                }
+                return dslRet;
+            }
         }
 
         public override void Attempt() {
@@ -54,6 +66,10 @@ namespace EGUpdate {
                 }
             }
         }
+
+        public bool GetConcurrecy() {
+            return _bConcurrent;
+        }
     }
 
     [TestFixture]
@@ -61,45 +77,67 @@ namespace EGUpdate {
 
         [Test]
         public void Test() {
-            XDocument xd = XDocument.Load("testAppConfig.xml");
-            AppConfig ac = new AppConfig(xd.Element("app"));
-            DSDelta dsdDelta = ac.GetDelta();
-            Assert.AreEqual(5, ac.GetSteps().Count);
-            foreach (DeltaStep ds in ac.GetSteps(DeltaStepCode.Set)) {
-                DSExec dse = (DSExec)(ds);
+            DSDelta dsdDelta = DeltaStepTest.GetTestDelta();
+            Assert.Less(7, dsdDelta.GetDescendantSteps(DeltaStepCode.Set).Count);
+            foreach (DeltaStep ds in dsdDelta.GetDescendantSteps(DeltaStepCode.Set)) {
+                DSSet dss = (DSSet)(ds);
                 switch (ds.GetID()) {
-                    case "ie":
-                        Assert.AreEqual(@"C:\Program Files (x86)\Google\Chrome\Application\chrome.exe", dse.GetPath());
-                        Assert.AreEqual(@"http://www.stackoverflow.com", dse.GetArgs());
-                        Assert.AreEqual(false, dse.GetWaitCmd());
-                        Assert.AreEqual(DeltaStepCautionLevel.Die, dse.GetCautionLevel());
+                    case "appdir":
+                        Assert.AreEqual(AppConfigTest.sLocalTestPath, dss.GetLocal());
+                        Assert.AreEqual(@"http://www.google.com/", dss.GetRemote());
+                        Assert.AreEqual(DeltaStepCautionLevel.Die, dss.GetCautionLevel());
+                        Assert.True(dss.GetConcurrecy());
                         break;
-                    case "np":
-                        Assert.AreEqual(@"C:\Windows\System32\notepad.exe", dse.GetPath());
-                        Assert.AreEqual(@"C:\Windows\csup.txt", dse.GetArgs());
-                        Assert.AreEqual(false, dse.GetWaitCmd());
-                        Assert.AreEqual(DeltaStepCautionLevel.Die, dse.GetCautionLevel());
+                    case "remdir":
+                        Assert.AreEqual(AppConfigTest.sLocalTestPath + @"\v2.0", dss.GetLocal());
+                        Assert.AreEqual(AppConfigTest.sRemoteTestPath, dss.GetRemote());
+                        Assert.AreEqual(DeltaStepCautionLevel.Safe, dss.GetCautionLevel());
+                        Assert.False(dss.GetConcurrecy());
                         break;
-                    case "calc":
-                        Assert.AreEqual(@"C:\Windows\System32\calc.exe", dse.GetPath());
-                        Assert.AreEqual(@"", dse.GetArgs());
-                        Assert.AreEqual(true, dse.GetWaitCmd());
-                        Assert.AreEqual(DeltaStepCautionLevel.Die, dse.GetCautionLevel());
+                    case "movetests":
+                        Assert.AreEqual(AppConfigTest.sLocalTestPath + @"\movetests", dss.GetLocal());
+                        Assert.AreEqual(AppConfigTest.sRemoteTestPath, dss.GetRemote());
+                        Assert.AreEqual(DeltaStepCautionLevel.Force, dss.GetCautionLevel());
+                        Assert.False(dss.GetConcurrecy());
                         break;
-                    case "update":
-                        Assert.AreEqual(@"C:\Users\User\Desktop\updatertest\update.exe", dse.GetPath());
-                        Assert.AreEqual(@"C:\Users\User\Desktop\updatertest", dse.GetArgs());
-                        Assert.AreEqual(false, dse.GetWaitCmd());
-                        Assert.AreEqual(DeltaStepCautionLevel.Skip, dse.GetCautionLevel());
+                    case "gettests":
+                        Assert.AreEqual(AppConfigTest.sLocalTestPath + @"\gettests", dss.GetLocal());
+                        Assert.AreEqual(AppConfigTest.sRemoteTestPath, dss.GetRemote());
+                        Assert.AreEqual(DeltaStepCautionLevel.Die, dss.GetCautionLevel());
+                        Assert.False(dss.GetConcurrecy());
                         break;
-                    case "oldnew":
-                        Assert.AreEqual(@"C:\Users\User\Desktop\updatertest\v2.0\cmd.exe", dse.GetPath());
-                        Assert.AreEqual(@"v1.0", dse.GetArgs());
-                        Assert.AreEqual(true, dse.GetWaitCmd());
-                        Assert.AreEqual(DeltaStepCautionLevel.Die, dse.GetCautionLevel());
+                    case "copytests":
+                        Assert.AreEqual(AppConfigTest.sLocalTestPath + @"\copytests", dss.GetLocal());
+                        Assert.AreEqual(AppConfigTest.sRemoteTestPath, dss.GetRemote());
+                        Assert.AreEqual(DeltaStepCautionLevel.Die, dss.GetCautionLevel());
+                        Assert.False(dss.GetConcurrecy());
+                        break;
+                    case "deltests":
+                        Assert.AreEqual(AppConfigTest.sLocalTestPath + @"\deltests", dss.GetLocal());
+                        Assert.AreEqual(AppConfigTest.sRemoteTestPath, dss.GetRemote());
+                        Assert.AreEqual(DeltaStepCautionLevel.Skip, dss.GetCautionLevel());
+                        Assert.False(dss.GetConcurrecy());
+                        break;
+                    case "mkdirtests":
+                        Assert.AreEqual(AppConfigTest.sLocalTestPath, dss.GetLocal());
+                        Assert.AreEqual(AppConfigTest.sRemoteTestPath, dss.GetRemote());
+                        Assert.AreEqual(DeltaStepCautionLevel.Force, dss.GetCautionLevel());
+                        Assert.False(dss.GetConcurrecy());
+                        break;
+                    case "killtests":
+                        Assert.AreEqual(AppConfigTest.sLocalTestPath, dss.GetLocal());
+                        Assert.AreEqual(AppConfigTest.sRemoteTestPath, dss.GetRemote());
+                        Assert.AreEqual(DeltaStepCautionLevel.Die, dss.GetCautionLevel());
+                        Assert.False(dss.GetConcurrecy());
+                        break;
+                    case "startuptests":
+                        Assert.AreEqual(AppConfigTest.sLocalTestPath, dss.GetLocal());
+                        Assert.AreEqual(AppConfigTest.sRemoteTestPath, dss.GetRemote());
+                        Assert.AreEqual(DeltaStepCautionLevel.Die, dss.GetCautionLevel());
+                        Assert.False(dss.GetConcurrecy());
                         break;
                     default:
-                        Assert.Fail("Unnamed <exec> step");
+                        Assert.Fail("Unnamed <set> step at " + ds.GetID());
                         break;
                 }
             }

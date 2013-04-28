@@ -11,16 +11,36 @@ namespace EGUpdate {
         public static string GetString(string sURL) {
             HttpWebRequest hwreqRequest;
             HttpWebResponse hwrspResponse;
-            try {
-                hwreqRequest = (HttpWebRequest)WebRequest.Create(sURL);
-                hwreqRequest.Method = "GET";
-                hwreqRequest.ContentLength = 0;
-                hwrspResponse = (HttpWebResponse)hwreqRequest.GetResponse();
-                using (StreamReader reader = new StreamReader(hwrspResponse.GetResponseStream())) {
-                    return reader.ReadToEnd();
+            hwreqRequest = (HttpWebRequest)WebRequest.Create(sURL);
+            hwreqRequest.Method = "GET";
+            hwreqRequest.ContentLength = 0;
+            hwrspResponse = (HttpWebResponse)hwreqRequest.GetResponse();
+            using (StreamReader reader = new StreamReader(hwrspResponse.GetResponseStream())) {
+                return reader.ReadToEnd();
+            }
+        }
+        public static byte[] GetBytes(string sURL) {
+            HttpWebRequest hwreqRequest;
+            HttpWebResponse hwrspResponse;
+            hwreqRequest = (HttpWebRequest)WebRequest.Create(sURL);
+            hwreqRequest.Method = "GET";
+            hwreqRequest.ContentLength = 0;
+            hwrspResponse = (HttpWebResponse)hwreqRequest.GetResponse();
+            using (BinaryReader reader = new BinaryReader(hwrspResponse.GetResponseStream())) {
+                return reader.ReadBytes(int.MaxValue);
+            }
+        }
+        public static void DownloadFileTo(string sURL, string sPath) {
+            HttpWebRequest hwreqRequest;
+            HttpWebResponse hwrspResponse;
+            hwreqRequest = (HttpWebRequest)WebRequest.Create(sURL);
+            hwreqRequest.Method = "GET";
+            hwreqRequest.ContentLength = 0;
+            hwrspResponse = (HttpWebResponse)hwreqRequest.GetResponse();
+            using (BinaryReader reader = new BinaryReader(hwrspResponse.GetResponseStream())) {
+                using (FileStream fs = File.Create(sPath)) {
+                    reader.BaseStream.CopyTo(fs);
                 }
-            } catch (Exception e) {
-                throw e;
             }
         }
 
@@ -50,12 +70,12 @@ namespace EGUpdate {
         public void Test() {
             string sFail;
             try {
-                sFail = HTTP.GetString("http://localhost/dev/updater/404notfound");
+                sFail = HTTP.GetString(AppConfigTest.sRemoteTestPath + "/404notfound");
                 Assert.Fail("Code should 404");
             } catch (WebException we) {
                 Assert.IsTrue(HTTP.Is404(we));
             } catch (Exception e) {
-                Console.WriteLine("Bad error:" + e.Message);
+                Assert.Fail("Bad error, code should 404:" + e.Message);
             }
             try {
                 sFail = HTTP.GetString("http://merp.edgemontgeek.com/");
@@ -63,8 +83,14 @@ namespace EGUpdate {
             } catch (Exception e) {
                 Console.WriteLine("Good error:" + e.Message);
             }
-            Assert.AreEqual(HTTP.GetString("http://localhost/dev/updater/test"), "EGUpdater Test");
+            Assert.AreEqual(HTTP.GetString(AppConfigTest.sRemoteTestPath + "/test"), "EGUpdater Test");
+        }
 
+        [Test]
+        public void TestDownload() {
+            HTTP.DownloadFileTo("http://home.edgemontgeek.com/dev/updater/testapp/test", "httptest.txt");
+            Assert.AreEqual("EGUpdater Test", File.ReadAllText("httptest.txt"));
+            File.Delete("httptest.txt");
         }
     }
 }

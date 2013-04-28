@@ -17,7 +17,6 @@ namespace EGUpdate {
                 Globals.FailAndDie("File extension must be xml");
             }
             try {
-
                 XDocument xd = XDocument.Load(sPath);
                 XElement xeCatalog = xd.Elements().ElementAt(0);
                 if (xeCatalog.Name.ToString() != "catalog") throw new FormatException("File is not properly formatted");
